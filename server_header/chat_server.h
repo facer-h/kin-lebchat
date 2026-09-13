@@ -2,6 +2,7 @@
 #define CHAT_SERVER_H_
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <cstdint>
 #include <functional>
@@ -68,6 +69,10 @@ class ChatServer {
     std::uint64_t user_id = 0;
     bool authenticated = false;
     std::vector<std::uint8_t> receive_buffer;
+    std::vector<std::uint8_t> send_buffer;
+    std::size_t send_offset = 0;
+    std::chrono::steady_clock::time_point last_active_time =
+        std::chrono::steady_clock::now();
     std::mutex send_mutex;
   };
 
@@ -114,6 +119,12 @@ class ChatServer {
   void HandleReadable(int client_socket);
 
   /*
+   * 参数：client_socket，发生可写事件的客户端套接字。
+   * 功能：继续发送 send_buffer 中尚未发送的数据，并维护 EPOLLOUT 事件。
+   */
+  void HandleWritable(int client_socket);
+
+  /*
    * 参数：client_socket，拥有待解析数据的客户端套接字。
    * 功能：按协议头中的包长度解决粘包和半包，并逐个分发完整协议包。
    */
@@ -150,6 +161,18 @@ class ChatServer {
   int FindOnlineUser(std::uint64_t user_id) const;
 
   /*
+   * 参数：无。
+   * 功能：检查客户端最后活跃时间，关闭超过心跳超时时间的连接。
+   */
+  void CheckIdleConnections();
+
+  /*
+   * 参数：client_socket，请求来源；packet，心跳请求协议包。
+   * 功能：刷新客户端活跃时间，并返回相同 sequence_id 的心跳响应。
+   */
+  void HandleHeartbeat(int client_socket, const ProtocolPacket& packet);
+
+  /*
    * 参数：client_socket，请求来源；packet，注册请求协议包。
    * 功能：校验账号和密码字段，创建用户并返回注册结果。
    */
@@ -181,16 +204,18 @@ class ChatServer {
                                  const ProtocolPacket& packet);
 
   /*
-   * 参数：client_socket，请求来源；packet，私聊消息协议包。
-   * 功能：验证会话成员身份、保存消息，并向在线接收者转发消息。
+   * 参数：client_socket，请求来源；packet，会话成员操作协议包。
+   * 功能：处理添加、移除、退出以及查询会话成员等请求。
    */
-  void HandlePrivateMessage(int client_socket, const ProtocolPacket& packet);
+  void HandleConversationMemberRequest(int client_socket,
+                                       const ProtocolPacket& packet);
 
   /*
-   * 参数：client_socket，请求来源；packet，群聊消息协议包。
-   * 功能：验证群成员身份、保存消息，并向在线群成员转发消息。
+   * 参数：client_socket，请求来源；packet，消息发送协议包。
+   * 功能：根据 ConversationType 处理私聊或群聊，验证成员身份、保存消息，
+   *       并向该会话中的在线成员推送消息。
    */
-  void HandleGroupMessage(int client_socket, const ProtocolPacket& packet);
+  void HandleMessageSend(int client_socket, const ProtocolPacket& packet);
 
   DatabaseManagers database_managers_;
 
@@ -203,7 +228,11 @@ class ChatServer {
   std::condition_variable tasks_cv_;
   std::mutex tasks_mutex_;
 
-  std::unordered_map<int, std::shared_ptr<ClientSession>> sessions_;
+  /* 参数1: 客户端会话映射 
+  * 参数2: 在线用户映射
+  
+  */
+  std::unordered_map<int, std::shared_ptr<ClientSession>> sessions_; 
   std::unordered_map<std::uint64_t, int> online_users_;
   mutable std::mutex sessions_mutex_;
 };

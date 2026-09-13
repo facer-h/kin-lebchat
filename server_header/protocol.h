@@ -7,52 +7,70 @@
 #include <vector>
 
 // 协议中的所有整数在线上传输时统一使用网络字节序（大端序）。
-inline constexpr std::uint32_t kProtocolMagic = 0x43484154;  // ASCII: CHAT
-inline constexpr std::uint16_t kProtocolVersion = 1;
-inline constexpr std::uint16_t kProtocolHeaderSize = 24;
-inline constexpr std::uint32_t kMaxProtocolBodySize = 1024 * 1024;
+inline constexpr std::uint32_t kProtocolMagic =
+    0x43484154;                                          // ASCII: CHAT 协议标识
+inline constexpr std::uint16_t kProtocolVersion = 1;     /* 协议版本 */
+inline constexpr std::uint16_t kProtocolHeaderSize = 24; /* 协议头大小 */
+inline constexpr std::uint32_t kMaxProtocolBodySize =
+    1024 * 1024; /* 最大协议体大小  1m*/
 
 // 客户端与服务器之间的消息类型。
 enum class MessageType : std::uint16_t {
-  kUnknown = 0,
 
-  kHeartbeatRequest = 1,
-  kHeartbeatResponse = 2,
-  kErrorResponse = 3,
+  /*  0-99 系统级 */
+  kUnknown = 0,           /* 未知消息类型 */
+  kHeartbeatRequest = 1,  /* 心跳请求 */
+  kHeartbeatResponse = 2, /* 心跳响应 */
+  kErrorResponse = 3,     /* 错误响应 */
 
-  kRegisterRequest = 100,
-  kRegisterResponse = 101,
-  kLoginRequest = 102,
-  kLoginResponse = 103,
-  kLogoutRequest = 104,
-  kLogoutResponse = 105,
-  kUserInfoRequest = 106,
-  kUserInfoResponse = 107,
+  /*  100-199 用户相关 */
+  kRegisterRequest = 100,    /* 注册请求 */
+  kRegisterResponse = 101,   /* 注册响应 */
+  kLoginRequest = 102,       /* 登录请求 */
+  kLoginResponse = 103,      /* 登录响应 */
+  kLogoutRequest = 104,      /* 登出请求 */
+  kLogoutResponse = 105,     /* 登出响应 */
+  kUserInfoRequest = 106,    /* 用户信息请求 */
+  kUserInfoResponse = 107,   /* 用户信息响应 */
+  kUserSearchRequest = 108,  /* 搜索用户请求 */
+  kUserSearchResponse = 109, /* 搜索用户响应 */
 
-  kFriendAddRequest = 200,
-  kFriendAddResponse = 201,
-  kFriendReplyRequest = 202,
-  kFriendReplyResponse = 203,
-  kFriendDeleteRequest = 204,
-  kFriendDeleteResponse = 205,
-  kFriendListRequest = 206,
-  kFriendListResponse = 207,
-  kFriendRequestPush = 208,
+  /*  200-299 好友相关 */
+  kFriendAddRequest = 200,     /* 添加好友请求 */
+  kFriendAddResponse = 201,    /* 添加好友响应 */
+  kFriendReplyRequest = 202,   /* 好友回复请求 */
+  kFriendReplyResponse = 203,  /* 好友回复响应 */
+  kFriendDeleteRequest = 204,  /* 删除好友请求 */
+  kFriendDeleteResponse = 205, /* 删除好友响应 */
+  kFriendListRequest = 206,    /* 好友列表请求 */
+  kFriendListResponse = 207,   /* 好友列表响应 */
+  kFriendRequestPush = 208,    /* 好友请求推送 */
+  kFriendStatusPush = 209,     /* 好友在线状态推送 */
 
-  kConversationCreateRequest = 300,
-  kConversationCreateResponse = 301,
-  kConversationListRequest = 302,
-  kConversationListResponse = 303,
-  kConversationMemberRequest = 304,
-  kConversationMemberResponse = 305,
+  /*  300-399 会话相关 */
+  kConversationCreateRequest = 300,  /* 创建会话请求 */
+  kConversationCreateResponse = 301, /* 创建会话响应 */
+  kConversationListRequest = 302,    /* 会话列表请求 */
+  kConversationListResponse = 303,   /* 会话列表响应 */
+  kConversationMemberRequest = 304,  /* 会话成员请求 */
+  kConversationMemberResponse = 305, /* 会话成员响应 */
+  kConversationUpdateRequest = 306,  /* 修改群名称等会话资料 */
+  kConversationUpdateResponse = 307,
+  kConversationLeaveRequest = 308, /* 退出会话请求 */
+  kConversationLeaveResponse = 309,
+  kConversationMemberAddRequest = 310, /* 添加群成员请求 */
+  kConversationMemberAddResponse = 311,
+  kConversationMemberRemoveRequest = 312, /* 移除群成员请求 */
+  kConversationMemberRemoveResponse = 313,
 
-  kMessageSendRequest = 400,
-  kMessageSendResponse = 401,
-  kMessagePush = 402,
-  kMessageHistoryRequest = 403,
-  kMessageHistoryResponse = 404,
-  kMessageAckRequest = 405,
-  kMessageAckResponse = 406,
+  /*  400-499 消息相关 */
+  kMessageSendRequest = 400,     /* 发送消息请求 */
+  kMessageSendResponse = 401,    /* 发送消息响应 */
+  kMessagePush = 402,            /* 消息推送 */
+  kMessageHistoryRequest = 403,  /* 消息历史请求 */
+  kMessageHistoryResponse = 404, /* 消息历史响应 */
+  kMessageAckRequest = 405,      /* 消息确认请求 */
+  kMessageAckResponse = 406,     /* 消息确认响应 */
 };
 
 // 协议包标志位，可以通过按位或组合。
@@ -66,47 +84,47 @@ enum PacketFlag : std::uint16_t {
 
 // 服务器返回的统一业务状态码。
 enum class StatusCode : std::uint16_t {
-  kSuccess = 0,
-  kInvalidPacket = 1,
-  kUnsupportedVersion = 2,
-  kUnsupportedMessageType = 3,
-  kInvalidParameter = 4,
-  kNotAuthenticated = 5,
-  kPermissionDenied = 6,
-  kUserNotFound = 7,
-  kAccountAlreadyExists = 8,
-  kPasswordIncorrect = 9,
-  kFriendRelationAlreadyExists = 10,
-  kConversationNotFound = 11,
-  kNotConversationMember = 12,
-  kMessageNotFound = 13,
-  kDatabaseError = 14,
-  kServerBusy = 15,
-  kInternalError = 16,
+  kSuccess = 0,                       // 成功
+  kInvalidPacket = 1,                 // 非法协议包
+  kUnsupportedVersion = 2,            // 不支持的协议版本
+  kUnsupportedMessageType = 3,        // 不支持的消息类型
+  kInvalidParameter = 4,              // 无效参数
+  kNotAuthenticated = 5,              // 未认证
+  kPermissionDenied = 6,              // 权限被拒绝
+  kUserNotFound = 7,                  // 用户未找到
+  kAccountAlreadyExists = 8,          // 账户已存在
+  kPasswordIncorrect = 9,             // 密码错误
+  kFriendRelationAlreadyExists = 10,  // 好友关系已存在
+  kConversationNotFound = 11,         // 会话未找到
+  kNotConversationMember = 12,        // 不是会话成员
+  kMessageNotFound = 13,              // 消息未找到
+  kDatabaseError = 14,                // 数据库错误
+  kServerBusy = 15,                   // 服务器繁忙
+  kInternalError = 16,                // 内部错误
 };
 
 // 固定长度为 24 字节的逻辑包头。
 // 禁止直接 memcpy 该结构体进行网络传输，必须逐字段编码以避免内存对齐问题。
 struct PacketHeader {
-  std::uint32_t magic = kProtocolMagic;
-  std::uint16_t version = kProtocolVersion;
-  std::uint16_t header_size = kProtocolHeaderSize;
-  MessageType message_type = MessageType::kUnknown;
-  std::uint16_t flags = kFlagNone;
-  std::uint32_t body_size = 0;
-  std::uint64_t sequence_id = 0;
+  std::uint32_t magic = kProtocolMagic;              // 协议魔数
+  std::uint16_t version = kProtocolVersion;          // 协议版本
+  std::uint16_t header_size = kProtocolHeaderSize;   // 包头大小
+  MessageType message_type = MessageType::kUnknown;  // 消息类型
+  std::uint16_t flags = kFlagNone;                   // 标志位
+  std::uint32_t body_size = 0;                       // 包体大小
+  std::uint64_t sequence_id = 0;                     // 序列号
 };
 
 // 一个经过解码的完整协议包，body 保存 UTF-8 JSON 文本。
 struct ProtocolPacket {
-  PacketHeader header;
-  std::string body;
+  PacketHeader header;  // 包头
+  std::string body;     // 包体
 };
 
 enum class DecodeResult {
-  kSuccess,
-  kNeedMoreData,
-  kInvalidPacket,
+  kSuccess,        // 解码成功
+  kNeedMoreData,   // 需要更多数据
+  kInvalidPacket,  // 非法协议包
 };
 
 class ProtocolCodec {
