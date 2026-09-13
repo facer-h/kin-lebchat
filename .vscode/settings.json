@@ -1,0 +1,7 @@
+{
+    "editor.inlineSuggest.enabled": true,
+    "editor.tabCompletion": "on",
+    "github.copilot.enable": {
+        "*": true
+    }
+}
