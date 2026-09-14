@@ -14,13 +14,13 @@ ifneq ($(MYSQL_LIBS),)
 endif
 
 # 源文件列表
-SRCS := src/manager_sql.cc \
-        src/manage_user.cc \
-        src/manage_user_friend.cc \
-        src/manage_conversation.cc \
-        src/manage_conversation_member.cc \
-        src/manage_message.cc \
-        src/protocol.cc \
+SRCS := src/database/manager_sql.cc \
+        src/database/manage_user.cc \
+        src/database/manage_user_friend.cc \
+        src/database/manage_conversation.cc \
+        src/database/manage_conversation_member.cc \
+        src/database/manage_message.cc \
+        src/protocol/protocol.cc \
         src/main.cc
 
 # 目标文件
