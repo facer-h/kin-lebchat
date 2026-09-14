@@ -20,6 +20,7 @@ SRCS := src/manager_sql.cc \
         src/manage_conversation.cc \
         src/manage_conversation_member.cc \
         src/manage_message.cc \
+        src/protocol.cc \
         src/main.cc
 
 # 目标文件
