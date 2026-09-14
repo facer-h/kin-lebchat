@@ -9,22 +9,22 @@
 // 客户端与服务器之间的消息类型。
 enum class MessageType : std::uint16_t {
   // 0-99：系统级。
-  kUnknown = 0,
-  kHeartbeatRequest = 1,
-  kHeartbeatResponse = 2,
-  kErrorResponse = 3,
+  kUnknown = 0, // 未知类型
+  kHeartbeatRequest = 1,  // 心跳请求
+  kHeartbeatResponse = 2, // 心跳响应
+  kErrorResponse = 3, // 错误响应
 
   // 100-199：用户相关。
-  kRegisterRequest = 100,
-  kRegisterResponse = 101,
-  kLoginRequest = 102,
-  kLoginResponse = 103,
-  kLogoutRequest = 104,
-  kLogoutResponse = 105,
-  kUserInfoRequest = 106,
-  kUserInfoResponse = 107,
-  kUserSearchRequest = 108,
-  kUserSearchResponse = 109,
+  kRegisterRequest = 100, // 注册请求
+  kRegisterResponse = 101, // 注册响应
+  kLoginRequest = 102, // 登录请求
+  kLoginResponse = 103, // 登录响应
+  kLogoutRequest = 104, // 登出请求
+  kLogoutResponse = 105, // 登出响应
+  kUserInfoRequest = 106, // 用户信息请求
+  kUserInfoResponse = 107, // 用户信息响应
+  kUserSearchRequest = 108, // 用户搜索请求
+  kUserSearchResponse = 109, // 用户搜索响应
 
   // 200-299：好友相关。
   kFriendAddRequest = 200,
