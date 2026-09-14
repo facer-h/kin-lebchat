@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <memory>
+#include <type_traits>
 #include <utility>
 
 namespace {
@@ -260,7 +262,10 @@ std::vector<RawRow> ManagerSql::ExecuteSelect(
   constexpr std::size_t kBufferSize = 64 * 1024;
   std::vector<std::array<char, kBufferSize>> buffers(fieldCount);
   std::vector<unsigned long> resultLengths(fieldCount);
-  std::vector<my_bool> isNull(fieldCount);
+  // is_null 需要指向“是否为 NULL”的标志；用与 MYSQL_BIND::is_null 指向类型
+  // 相同的数组存储，避免硬编码 my_bool 或 bool 导致不同 MySQL 版本不兼容。
+  using NullFlag = std::remove_pointer_t<decltype(MYSQL_BIND::is_null)>;
+  std::unique_ptr<NullFlag[]> isNull(new NullFlag[fieldCount]);
   std::vector<MYSQL_BIND> resultBinds(fieldCount);
   for (unsigned int i = 0; i < fieldCount; ++i) {
     std::memset(&resultBinds[i], 0, sizeof(MYSQL_BIND));
