@@ -1,15 +1,13 @@
 #ifndef KINCHAT_HEADER_DATABASE_MANAGER_SQL_H_
 #define KINCHAT_HEADER_DATABASE_MANAGER_SQL_H_
 
+#include <mysql/mysql.h>
 #include <mutex>
 #include <string>
 #include <vector>
 
 #include "database/database_config.h"
 #include "database/raw_row.h"
-
-// MySQL C API 中连接对象的底层结构；完整定义只在 .cc 中引入。
-struct st_mysql;
 
 // 所有数据表管理类的抽象父类，只负责连接和通用 SQL 执行能力。
 class ManagerSql {
@@ -122,7 +120,7 @@ class ManagerSql {
    */
   void SetLastErrorLocked(const std::string& error);
 
-  st_mysql* connection_ = nullptr;
+  MYSQL* connection_ = nullptr;
   DatabaseConfig config_;
   mutable std::mutex mutex_;
   std::string last_error_;
