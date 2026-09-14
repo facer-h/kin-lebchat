@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "protocol/protocol_types.h"
+#include "protocol_types.h"
 
 // TCP 协议包的编码、解码和包头校验工具。
 class ProtocolCodec {
